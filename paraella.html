@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Para Mi Amor</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: black;
+      font-family: 'Comic Sans MS', cursive;
+    }
+
+/*
+    canvas {
+      display: block;
+    }
+ */
+
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+}
+
+#bgCanvas {
+  z-index: 0;
+}
+
+#canvas {
+  z-index: 1;
+}
+
+
+
+  </style>
+</head>
+<body>
+<canvas id="bgCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></canvas>
+
+
+
+<canvas id="canvas"></canvas>
+<script>
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+
+  const phrases = [
+    "Te Amo",
+    "My love",
+    "Eres preciosa",
+    "Me encantas",
+    "Amor de mi vida",
+    "Eres mi todo",
+    "Gracias por existir",
+    "Contigo todo es mejor",
+    "Eres mi paz",
+    "Siempre tú",
+    "Mi razón de sonreír",
+    "Mi amor eterno",
+    "Nunca dejes de brillar",
+    "Tú y yo, siempre"
+  ];
+
+  const flyingTexts = [];
+
+  function random(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  class FlyingText {
+    constructor() {
+      this.reset();
+    }
+
+    reset() {
+      this.text = phrases[Math.floor(Math.random() * phrases.length)];
+      this.x = random(-canvas.width, canvas.width);
+      this.y = random(-canvas.height, canvas.height);
+      this.z = random(100, 2000); // profundidad
+      this.size = random(30, 60);
+      this.speed = random(8, 16); // velocidad de acercamiento
+    }
+
+    update() {
+      this.z -= this.speed;
+      if (this.z <= 0) {
+        this.reset();
+      }
+    }
+
+    draw() {
+      const scale = 800 / this.z;
+      const x = this.x * scale + centerX;
+      const y = this.y * scale + centerY;
+      const fontSize = this.size * scale;
+      const alpha = Math.min(1, scale); // más cerca = más opaco
+
+      ctx.font = `${fontSize}px Comic Sans MS`;
+      ctx.fillStyle = `rgba(124, 252, 0, ${alpha})`; // verde brillante con transparencia
+      ctx.textAlign = "center";
+      ctx.fillText(this.text, x, y);
+    }
+  }
+
+  for (let i = 0; i < 80; i++) {
+    flyingTexts.push(new FlyingText());
+  }
+
+  function animate() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (let text of flyingTexts) {
+      text.update();
+      text.draw();
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+</script>
+
+<script>
+  const bgCanvas = document.getElementById("bgCanvas");
+  const bgCtx = bgCanvas.getContext("2d");
+
+  let stars = [];
+
+  function initBackgroundStars() {
+    bgCanvas.width = window.innerWidth;
+    bgCanvas.height = window.innerHeight;
+
+    stars = [];
+    for (let i = 0; i < 150; i++) {
+      stars.push({
+        x: Math.random() * bgCanvas.width,
+        y: Math.random() * bgCanvas.height,
+        radius: Math.random() * 1.5 + 0.5,
+        dx: Math.random() * 0.1 - 0.05,
+        dy: Math.random() * 0.1 - 0.05
+      });
+    }
+  }
+
+  function animateBackgroundStars() {
+    bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+    bgCtx.fillStyle = "black";
+    bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+    bgCtx.fillStyle = "white";
+    for (let star of stars) {
+      bgCtx.beginPath();
+      bgCtx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+      bgCtx.fill();
+
+      star.x += star.dx;
+      star.y += star.dy;
+
+      if (star.x < 0 || star.x > bgCanvas.width || star.y < 0 || star.y > bgCanvas.height) {
+        star.x = Math.random() * bgCanvas.width;
+        star.y = Math.random() * bgCanvas.height;
+      }
+    }
+
+    requestAnimationFrame(animateBackgroundStars);
+  }
+
+  window.addEventListener("resize", initBackgroundStars);
+  window.addEventListener("orientationchange", initBackgroundStars);
+
+  window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+});
+
+  initBackgroundStars();
+  animateBackgroundStars();
+</script>
+
+
+</body>
+</html>
