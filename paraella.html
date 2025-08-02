@@ -70,23 +70,53 @@ canvas {
     "Tú y yo, siempre"
   ];
 
-  const flyingTexts = [];
+  // URLs de imágenes (puedes cambiar por las que prefieras)
+  const images = [
+    "images/1.jpeg",
+    "images/2.jpeg",
+    "images/3.jpeg",
+    "images/4.jpeg",
+    "images/5.jpeg",
+    "images/6.jpeg",
+    "images/7.jpeg",
+    "images/8.jpeg",
+    "images/9.jpg",
+    "images/10.jpg",
+    "images/11.jpg",
+    "images/12.jpg",
+  ];
+
+  // Pre-cargar imágenes
+  const loadedImages = images.map(src => {
+    const img = new Image();
+    img.src = src;
+    return img;
+  });
+
+  const flyingItems = [];
 
   function random(min, max) {
     return Math.random() * (max - min) + min;
   }
 
-  class FlyingText {
+  class FlyingItem {
     constructor() {
       this.reset();
     }
 
     reset() {
-      this.text = phrases[Math.floor(Math.random() * phrases.length)];
+      // Decide si será texto o imagen
+      this.isImage = Math.random() < 0.4; // 40% imágenes, 60% frases
+      if (this.isImage) {
+        this.img = loadedImages[Math.floor(Math.random() * loadedImages.length)];
+        this.size = random(60, 120); // tamaño base para imagen
+      } else {
+        this.text = phrases[Math.floor(Math.random() * phrases.length)];
+        this.size = random(30, 60); // tamaño base para texto
+      }
       this.x = random(-canvas.width, canvas.width);
       this.y = random(-canvas.height, canvas.height);
       this.z = random(100, 2000); // profundidad
-      this.size = random(30, 60);
       this.speed = random(8, 16); // velocidad de acercamiento
     }
 
@@ -101,33 +131,41 @@ canvas {
       const scale = 800 / this.z;
       const x = this.x * scale + centerX;
       const y = this.y * scale + centerY;
-      const fontSize = this.size * scale;
       const alpha = Math.min(1, scale); // más cerca = más opaco
 
-      ctx.font = `${fontSize}px Comic Sans MS`;
-      ctx.fillStyle = `rgba(124, 252, 0, ${alpha})`; // verde brillante con transparencia
-      ctx.textAlign = "center";
-      ctx.fillText(this.text, x, y);
+      if (this.isImage && this.img.complete) {
+        const imgSize = this.size * scale;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.drawImage(this.img, x - imgSize / 2, y - imgSize / 2, imgSize, imgSize);
+        ctx.restore();
+      } else if (!this.isImage) {
+        const fontSize = this.size * scale;
+        ctx.font = `${fontSize}px Comic Sans MS`;
+        ctx.fillStyle = `rgba(124, 252, 0, ${alpha})`;
+        ctx.textAlign = "center";
+        ctx.fillText(this.text, x, y);
+      }
     }
   }
 
-  for (let i = 0; i < 80; i++) {
-    flyingTexts.push(new FlyingText());
+for (let i = 0; i < 80; i++) {
+  flyingItems.push(new FlyingItem());
+}
+
+function animate() {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (let item of flyingItems) {
+    item.update();
+    item.draw();
   }
 
-  function animate() {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  requestAnimationFrame(animate);
+}
 
-    for (let text of flyingTexts) {
-      text.update();
-      text.draw();
-    }
-
-    requestAnimationFrame(animate);
-  }
-
-  animate();
+animate();
 
   window.addEventListener("resize", () => {
     canvas.width = window.innerWidth;
