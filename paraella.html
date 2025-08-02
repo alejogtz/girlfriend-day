@@ -133,11 +133,19 @@ canvas {
       const y = this.y * scale + centerY;
       const alpha = Math.min(1, scale); // más cerca = más opaco
 
-      if (this.isImage && this.img.complete) {
+      if (this.isImage && this.img.complete && this.img.naturalWidth && this.img.naturalHeight) {
         const imgSize = this.size * scale;
+        // Recorte cuadrado central
+        const side = Math.min(this.img.naturalWidth, this.img.naturalHeight);
+        const sx = (this.img.naturalWidth - side) / 2;
+        const sy = (this.img.naturalHeight - side) / 2;
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.drawImage(this.img, x - imgSize / 2, y - imgSize / 2, imgSize, imgSize);
+        ctx.drawImage(
+          this.img,
+          sx, sy, side, side, // recorte cuadrado central
+          x - imgSize / 2, y - imgSize / 2, imgSize, imgSize // destino
+        );
         ctx.restore();
       } else if (!this.isImage) {
         const fontSize = this.size * scale;
